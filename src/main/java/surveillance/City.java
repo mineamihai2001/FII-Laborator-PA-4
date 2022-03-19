@@ -2,6 +2,8 @@ package surveillance;
 
 import com.github.javafaker.Faker;
 import org.jgrapht.Graph;
+import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
+import org.jgrapht.alg.spanning.PrimMinimumSpanningTree;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
@@ -104,6 +106,8 @@ public class City {
                 ++index;
             }
             network.addEdge(end1, end2, s);
+            network.setEdgeWeight(end1, end2, (double)s.getLength());
+//            network.setEdgeWeight(s, s.getLength());
         }
 
     }
@@ -112,22 +116,26 @@ public class City {
         streetList.sort((x, y) -> x.getLength() - y.getLength());
         for (
                 Street s : streetList) {
-            s.printDetails();
+//            s.printDetails();
         }
     }
 
-    public List<Street> MST() {
-        List<Street> connectedStreets = new ArrayList<>();
-        Intersection start = network.vertexSet().stream().findAny().get();
-        System.out.println("The start node is: " + start.getName());
-        Iterator<Intersection> iterator = new DepthFirstIterator<>(network, start);
-        while(iterator.hasNext()) {
-            Intersection current = iterator.next();
-            System.out.println("CURRENT NODE: " + current.getName());
-//            connectedStreets.add()
+    public void printMST(SpanningTreeAlgorithm.SpanningTree tree) {
+        double totalWeight = tree.getWeight();
+        Set<Street> edges = tree.getEdges();
+        for(Street s : edges) {
+            System.out.println("Street: " + s.getName() + "[" + s.getLength() + "]");
         }
-        return connectedStreets;
+        System.out.println("TOTAL WEIGHT: " + totalWeight);
     }
+
+    public SpanningTreeAlgorithm.SpanningTree MST() {
+        PrimMinimumSpanningTree<Intersection, Street> mst = new PrimMinimumSpanningTree<>(network);
+        SpanningTreeAlgorithm.SpanningTree tree = mst.getSpanningTree();
+        printMST(tree);
+        return tree;
+    }
+
 
     public void generateCity() {
         createStreets();
@@ -135,18 +143,8 @@ public class City {
 
         createNetwork();
         sortStreets();
+        MST();
 
-
-//        for (Intersection i : intersectionSet) {
-//            i.printIntersectionDetails();
-//        }
-//        List<Street> fs = new ArrayList<>();
-//        for (Intersection i : intersectionSet) {
-//            fs = i.filterIntersection(3);
-//            for (Street s : fs) {
-//                System.out.println(s.getName() + "[" + s.getLength() + "]");
-//            }
-//        }
     }
 
 }
